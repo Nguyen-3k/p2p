@@ -2,11 +2,11 @@
 
 @layer base {
   :root {
-    --color-navy: #0f2544;
-    --color-navy-light: #16335b;
+    --color-navy: #102f59;
+    --color-navy-light: #18427a;
+    --color-gold: #d9a83f;
     --color-green: #15803d;
-    --color-yellow: #f59e0b;
-    --color-cream: #faf8f3;
+    --color-cream: #fffaf0;
   }
 
   html {
@@ -26,7 +26,7 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1efe9;
+  background: #f5efe2;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -36,4 +36,13 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #ffffff !important;
+  }
 }

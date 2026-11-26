@@ -5,7 +5,7 @@ import { BrandLogo } from './BrandLogo';
 
 export const PublicFooter: React.FC = () => {
   return (
-    <footer className="bg-[#0F2544] text-slate-200 pt-14 pb-8">
+    <footer className="bg-[#102F59] text-slate-200 pt-14 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 pb-10 border-b border-white/10">
           <div className="space-y-4">
@@ -16,7 +16,7 @@ export const PublicFooter: React.FC = () => {
           </div>
 
           <div>
-            <h4 className="text-sm font-bold uppercase tracking-wider text-amber-400 mb-4">
+            <h4 className="text-sm font-bold uppercase tracking-wider text-[#D9A83F] mb-4">
               Điều hướng nhanh
             </h4>
             <ul className="space-y-2.5 text-sm text-slate-300">
@@ -26,18 +26,18 @@ export const PublicFooter: React.FC = () => {
                 </a>
               </li>
               <li>
-                <a href="#giai-phap" className="hover:text-white transition">
-                  Giải pháp Student P2P
-                </a>
-              </li>
-              <li>
-                <a href="#goi-ho-tro" className="hover:text-white transition">
-                  Các gói hỗ trợ dự kiến
-                </a>
-              </li>
-              <li>
                 <a href="#quy-trinh" className="hover:text-white transition">
-                  Quy trình hoạt động
+                  Hướng dẫn hoạt động
+                </a>
+              </li>
+              <li>
+                <a href="#tin-tuc" className="hover:text-white transition">
+                  Tin tức & Kiến thức
+                </a>
+              </li>
+              <li>
+                <a href="#lien-he" className="hover:text-white transition">
+                  Liên hệ dự án
                 </a>
               </li>
               <li>
@@ -49,7 +49,7 @@ export const PublicFooter: React.FC = () => {
           </div>
 
           <div>
-            <h4 className="text-sm font-bold uppercase tracking-wider text-amber-400 mb-4">
+            <h4 className="text-sm font-bold uppercase tracking-wider text-[#D9A83F] mb-4">
               Thông tin liên hệ
             </h4>
             <ul className="space-y-3 text-sm text-slate-300">
@@ -59,19 +59,24 @@ export const PublicFooter: React.FC = () => {
               </li>
               <li className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>contact@studentp2p.vn</span>
+                <span>contact@studentp2p.demo</span>
               </li>
               <li className="flex items-center gap-2.5">
                 <Phone className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>1900 0000</span>
+                <span>1900 0000 (Số minh họa đề án)</span>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
-          <p>© 2026 STUDENT P2P – Kết nối tài chính ngang hàng dành cho sinh viên.</p>
-          <p>Kết nối tài chính – Đồng hành cùng sinh viên</p>
+        <div className="pt-6 space-y-3 text-xs text-slate-300">
+          <p className="leading-relaxed text-slate-300/90">
+            Student P2P hiện là sản phẩm mô phỏng phục vụ mục đích học tập và trình diễn đề án. Các khoản vay, kết nối vốn, đánh giá tín nhiệm, hợp đồng và thanh toán trên nền tảng đều là dữ liệu giả lập, không phát sinh giao dịch tiền thật.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-slate-400">
+            <p>© 2026 STUDENT P2P – Kết nối nguồn vốn – Đồng hành cùng sinh viên.</p>
+            <p>Phiên bản MVP Trình diễn Đề án Sinh viên</p>
+          </div>
         </div>
       </div>
     </footer>

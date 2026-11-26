@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Calendar, CheckCircle2, CreditCard, History } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Calendar, CheckCircle2, CreditCard, FileCheck2, History } from 'lucide-react';
 import { AppLayout } from '../components/AppLayout';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { useApp } from '../context/AppContext';
@@ -116,11 +117,20 @@ export const LoansManagementPage: React.FC = () => {
               <div className="bg-white rounded-2xl border border-[#E7E2D8] p-6 space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
                   <div>
-                    <h3 className="text-lg font-extrabold text-[#0F2544]">
+                    <h3 className="text-lg font-extrabold text-[#102F59]">
                       Chi tiết khoản vay {activeConn.loanCode}
                     </h3>
                     <p className="text-xs text-slate-500">
+                      Kết nối: <strong>{activeConn.code ?? activeConn.id}</strong> • Hợp đồng:{' '}
+                      <Link to="/app/contracts" className="text-[#15803D] font-bold hover:underline inline-flex items-center gap-1">
+                        <FileCheck2 className="w-3.5 h-3.5" />
+                        {activeConn.contractCode ?? 'Xem hợp đồng'}
+                      </Link>
+                    </p>
+                    <p className="text-xs text-slate-500 mt-0.5">
                       Kết nối ngày {formatDate(activeConn.connectedAt)} • {activeConn.university}
+                      {typeof activeConn.simulatedMonthlyRate === 'number' &&
+                        ` • Phí mô phỏng ${(activeConn.simulatedMonthlyRate * 100).toFixed(1)}%/tháng`}
                     </p>
                   </div>
                   <div className="text-right">

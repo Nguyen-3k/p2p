@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import bannerImg from '../assets/banner.jpg';
 
 interface BrandLogoProps {
   size?: 'sm' | 'md' | 'lg';
@@ -25,7 +26,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         className={`${imgSize} rounded-xl overflow-hidden bg-[#FAF8F3] border border-[#E5E0D5] shadow-xs shrink-0 flex items-center justify-center`}
       >
         <img
-          src="/logo.jpeg"
+          src={bannerImg}
           alt="Student P2P Logo"
           className="h-full w-full object-cover"
         />

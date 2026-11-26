@@ -11,6 +11,9 @@ import { CreditScorePage } from './pages/CreditScorePage';
 import { FinancialEducationPage } from './pages/FinancialEducationPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { AdminPage } from './pages/AdminPage';
+import { ProfilePage } from './pages/ProfilePage';
+import { CapitalOffersPage } from './pages/CapitalOffersPage';
+import { ContractsPage } from './pages/ContractsPage';
 import type { UserRole } from './types';
 
 const ProtectedRoute: React.FC<{
@@ -46,7 +49,7 @@ export function App() {
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/app/education" element={<FinancialEducationPage />} />
 
-          {/* Role-based Demo App */}
+          {/* Role-based App */}
           <Route
             path="/app/borrower"
             element={
@@ -64,6 +67,14 @@ export function App() {
             }
           />
           <Route
+            path="/app/capital"
+            element={
+              <ProtectedRoute allowedRoles={['lender']}>
+                <CapitalOffersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/app/admin"
             element={
               <ProtectedRoute allowedRoles={['admin']}>
@@ -76,6 +87,22 @@ export function App() {
             element={
               <ProtectedRoute>
                 <LoansManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/contracts"
+            element={
+              <ProtectedRoute>
+                <ContractsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
               </ProtectedRoute>
             }
           />

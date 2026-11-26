@@ -2,6 +2,12 @@ export type UserRole = 'borrower' | 'lender' | 'admin';
 
 export type UserStatus = 'active' | 'locked';
 
+export type VerificationStatus =
+  | 'Chưa xác minh'
+  | 'Đang chờ duyệt'
+  | 'Đã xác minh mô phỏng'
+  | 'Không được chấp nhận';
+
 export interface User {
   id: string;
   fullName: string;
@@ -11,10 +17,122 @@ export interface User {
   role: UserRole;
   university: string;
   studentId?: string;
+  major?: string;
+  yearOfStudy?: string;
   gpa?: number;
   monthlyIncome?: number;
+  incomeSource?: string;
+  capitalPurpose?: string;
+  occupation?: string;
   simulatedCapital?: number; // For lenders
+  verificationStatus?: VerificationStatus;
+  verificationNote?: string;
   status: UserStatus;
+  createdAt: string;
+}
+
+export interface VerificationRequest {
+  id: string;
+  userId: string;
+  userName: string;
+  userRole: UserRole;
+  university: string;
+  studentId?: string;
+  confirmationNote: string;
+  status: VerificationStatus;
+  rejectionReason?: string;
+  submittedAt: string;
+  reviewedAt?: string;
+  reviewedBy?: string;
+}
+
+export type CapitalOfferStatus =
+  | 'Bản nháp'
+  | 'Đang khả dụng'
+  | 'Đang chờ kết nối'
+  | 'Đã phân bổ một phần'
+  | 'Đã sử dụng hết'
+  | 'Đã tạm ngừng';
+
+export interface CapitalOffer {
+  id: string;
+  code: string;
+  lenderId: string;
+  lenderName: string;
+  totalCapital: number;
+  allocatedCapital: number;
+  minPerLoan: number;
+  maxPerLoan: number;
+  supportedTerms: number[];
+  expectedMonthlyRate: number;
+  supportedPurposes: LoanPurpose[];
+  notes: string;
+  status: CapitalOfferStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type ProposalStatus =
+  | 'Chờ người vay xác nhận'
+  | 'Người vay đã đồng ý'
+  | 'Người vay từ chối'
+  | 'Người cho vay đã rút đề xuất'
+  | 'Hai bên đã xác nhận'
+  | 'Đã tạo hợp đồng dự thảo'
+  | 'Đã hủy';
+
+export interface ConnectionProposal {
+  id: string;
+  code: string;
+  loanRequestId: string;
+  loanCode: string;
+  capitalOfferId: string;
+  capitalCode: string;
+  lenderId: string;
+  lenderName: string;
+  borrowerId: string;
+  borrowerName: string;
+  university: string;
+  purpose: LoanPurpose;
+  amount: number;
+  termMonths: number;
+  simulatedMonthlyRate: number;
+  conditionsNote: string;
+  status: ProposalStatus;
+  borrowerConfirmedAt?: string;
+  lenderConfirmedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type ContractStatus =
+  | 'Bản dự thảo'
+  | 'Chờ xác nhận'
+  | 'Đã xác nhận mô phỏng'
+  | 'Đã hủy';
+
+export interface LoanContract {
+  id: string;
+  code: string;
+  proposalId: string;
+  connectionId: string;
+  loanRequestId: string;
+  loanCode: string;
+  borrowerId: string;
+  borrowerName: string;
+  borrowerUniversity: string;
+  borrowerStudentId?: string;
+  lenderId: string;
+  lenderName: string;
+  amount: number;
+  termMonths: number;
+  simulatedMonthlyRate: number;
+  totalRepayable: number;
+  installmentAmount: number;
+  firstDueDate: string;
+  status: ContractStatus;
+  borrowerConfirmedAt?: string;
+  lenderConfirmedAt?: string;
   createdAt: string;
 }
 
@@ -49,7 +167,7 @@ export interface LoanRequest {
   termMonths: number;
   description: string;
   incomeSource: string;
-  simulatedMonthlyRate: number; // e.g. 0.008 (0.8%/month simulated)
+  simulatedMonthlyRate: number;
   status: LoanStatus;
   creditGrade: CreditGrade;
   creditScore: number;
@@ -59,6 +177,11 @@ export interface LoanRequest {
 
 export interface LoanConnection {
   id: string;
+  code?: string;
+  proposalId?: string;
+  contractId?: string;
+  contractCode?: string;
+  capitalOfferId?: string;
   loanRequestId: string;
   loanCode: string;
   lenderId: string;
@@ -69,6 +192,7 @@ export interface LoanConnection {
   purpose: LoanPurpose;
   amount: number;
   termMonths: number;
+  simulatedMonthlyRate?: number;
   totalRepayable: number;
   paidAmount: number;
   status: 'Đang hoạt động' | 'Đã hoàn thành';
@@ -99,11 +223,11 @@ export interface RepaymentRecord {
 }
 
 export interface CreditScoreFactors {
-  profileScore: number; // max 20
-  gpaScore: number; // max 20
-  financialCapacityScore: number; // max 25
-  incomeStabilityScore: number; // max 20
-  repaymentHistoryScore: number; // max 15
+  profileScore: number;
+  gpaScore: number;
+  financialCapacityScore: number;
+  incomeStabilityScore: number;
+  repaymentHistoryScore: number;
 }
 
 export interface CreditScoreResult {
@@ -136,6 +260,15 @@ export interface FinancialArticle {
   summary: string;
   content: string[];
   keyTakeaways: string[];
+  publishedAt: string;
+}
+
+export interface NewsArticle {
+  id: string;
+  title: string;
+  category: 'Tin tức dự án' | 'Kiến thức tài chính' | 'Quản lý chi tiêu' | 'Vay có trách nhiệm';
+  summary: string;
+  content: string;
   publishedAt: string;
 }
 

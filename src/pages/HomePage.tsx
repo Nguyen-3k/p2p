@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
@@ -7,21 +7,53 @@ import {
   CheckCircle2,
   Cloud,
   FileSignature,
-  GraduationCap,
   Handshake,
   Layers,
   Lock,
+  Mail,
+  Newspaper,
+  Send,
   ShieldCheck,
   Sparkles,
   TrendingUp,
   UserCheck,
   AlertTriangle,
   Wallet,
+  X,
 } from 'lucide-react';
 import { PublicHeader } from '../components/PublicHeader';
 import { PublicFooter } from '../components/PublicFooter';
+import bannerImg from '../assets/banner.jpg';
+import { useApp } from '../context/AppContext';
+import type { NewsArticle } from '../types';
+import { formatDate } from '../utils/formatters';
 
 export const HomePage: React.FC = () => {
+  const { newsArticles, showToast } = useApp();
+  const [selectedNews, setSelectedNews] = useState<NewsArticle | null>(null);
+  const [contactName, setContactName] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [contactMessage, setContactMessage] = useState('');
+
+  const handleContactSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!contactName.trim() || !contactEmail.trim() || !contactMessage.trim()) {
+      showToast({
+        type: 'error',
+        title: 'Thiếu thông tin liên hệ',
+        description: 'Vui lòng điền đầy đủ họ tên, email và nội dung.',
+      });
+      return;
+    }
+    showToast({
+      type: 'success',
+      title: 'Đã tiếp nhận tin nhắn (Demo)',
+      description: 'Cảm ơn bạn đã quan tâm đến đề án Student P2P.',
+    });
+    setContactName('');
+    setContactEmail('');
+    setContactMessage('');
+  };
   const problems = [
     {
       title: 'Thiếu hụt tài chính ngắn hạn',
@@ -75,23 +107,43 @@ export const HomePage: React.FC = () => {
   const steps = [
     {
       step: '01',
-      title: 'Đăng ký & Xác minh tài khoản',
-      desc: 'Sinh viên hoặc người có vốn tạo tài khoản theo vai trò và hoàn thiện thông tin định hướng eKYC.',
+      title: 'Đăng ký tài khoản',
+      desc: 'Sinh viên hoặc người có vốn tạo tài khoản theo đúng vai trò trên nền tảng.',
     },
     {
       step: '02',
-      title: 'Cung cấp nhu cầu hoặc nguồn vốn',
-      desc: 'Sinh viên gửi yêu cầu vay theo gói phù hợp; người có vốn duyệt danh sách nhu cầu minh bạch.',
+      title: 'Hoàn thiện hồ sơ',
+      desc: 'Cập nhật thông tin cá nhân, trường học, ngành học, thu nhập hoặc nguồn vốn.',
     },
     {
       step: '03',
-      title: 'Đánh giá tín nhiệm & Kết nối',
-      desc: 'Hệ thống chấm điểm mô phỏng A–D và hỗ trợ hai bên xác nhận đề xuất kết nối.',
+      title: 'Xác minh mô phỏng',
+      desc: 'Gửi yêu cầu xác minh hồ sơ giả lập để Admin xét duyệt minh bạch.',
     },
     {
       step: '04',
-      title: 'Theo dõi khoản vay & Hoàn trả',
-      desc: 'Theo dõi lịch thanh toán định kỳ, cập nhật tiến độ hoàn trả và tích lũy điểm tín nhiệm.',
+      title: 'Đăng ký vay / nguồn vốn',
+      desc: 'Sinh viên tạo yêu cầu vay; người có vốn đăng ký gói vốn khả dụng.',
+    },
+    {
+      step: '05',
+      title: 'Tìm kiếm & Ghép nối',
+      desc: 'Bộ lọc thông minh và thuật toán quy tắc gợi ý kết nối phù hợp.',
+    },
+    {
+      step: '06',
+      title: 'Hai bên xác nhận',
+      desc: 'Người có vốn gửi đề xuất, sinh viên đồng ý và người có vốn chốt điều kiện.',
+    },
+    {
+      step: '07',
+      title: 'Tạo hợp đồng dự thảo',
+      desc: 'Hệ thống tự động sinh bản hợp đồng dự thảo minh họa và lịch thanh toán.',
+    },
+    {
+      step: '08',
+      title: 'Theo dõi khoản vay',
+      desc: 'Theo dõi tiến độ hoàn trả từng kỳ và tích lũy điểm tín nhiệm mô phỏng.',
     },
   ];
 
@@ -134,7 +186,7 @@ export const HomePage: React.FC = () => {
 
       <main className="flex-1">
         {/* 4.1 HERO SECTION */}
-        <section className="relative overflow-hidden border-b border-[#E7E2D8]">
+        <section id="top" className="relative overflow-hidden border-b border-[#E7E2D8]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20 lg:py-24">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
               <div className="lg:col-span-7 space-y-6">
@@ -146,7 +198,7 @@ export const HomePage: React.FC = () => {
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border border-[#E5E0D5] bg-white shadow-sm shrink-0">
                     <img
-                      src="/logo.jpeg"
+                      src={bannerImg}
                       alt="Logo Student P2P"
                       className="w-full h-full object-cover"
                     />
@@ -182,64 +234,38 @@ export const HomePage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Right FinTech Illustration Card */}
+              {/* Right Main Banner */}
               <div className="lg:col-span-5">
-                <div className="bg-white rounded-2xl border border-[#E7E2D8] shadow-md p-6 space-y-5">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-10 h-10 rounded-xl bg-[#0F2544] text-white flex items-center justify-center">
-                        <GraduationCap className="w-5 h-5" />
+                <div className="bg-white rounded-2xl border border-[#E7E2D8] shadow-md overflow-hidden">
+                  <div className="relative">
+                    <img
+                      src={bannerImg}
+                      alt="STUDENT P2P Banner"
+                      className="w-full h-auto object-cover"
+                    />
+                  </div>
+                  <div className="p-5 space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="rounded-xl bg-[#FAF8F3] p-3.5 border border-[#EBE6DC]">
+                        <p className="text-xs text-slate-500">Hạn mức học tập</p>
+                        <p className="text-base font-extrabold text-[#0F2544] mt-0.5">2 – 10 triệu</p>
+                        <p className="text-[11px] text-emerald-700 font-medium">Học phí & thiết bị</p>
                       </div>
-                      <div>
-                        <p className="text-xs text-slate-500 font-medium">Mô phỏng kết nối P2P</p>
-                        <p className="text-sm font-bold text-[#0F2544]">Hệ sinh thái Sinh viên</p>
+                      <div className="rounded-xl bg-[#FAF8F3] p-3.5 border border-[#EBE6DC]">
+                        <p className="text-xs text-slate-500">Vay vi mô khẩn cấp</p>
+                        <p className="text-base font-extrabold text-[#0F2544] mt-0.5">500k – 3 triệu</p>
+                        <p className="text-[11px] text-amber-700 font-medium">Sinh hoạt thiết yếu</p>
                       </div>
                     </div>
-                    <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      Trực tuyến
-                    </span>
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-xl bg-[#FAF8F3] p-4 border border-[#EBE6DC]">
-                      <p className="text-xs text-slate-500">Hạn mức học tập</p>
-                      <p className="text-lg font-extrabold text-[#0F2544] mt-1">2 – 10 triệu</p>
-                      <p className="text-[11px] text-emerald-700 font-medium mt-0.5">Học phí & thiết bị</p>
-                    </div>
-                    <div className="rounded-xl bg-[#FAF8F3] p-4 border border-[#EBE6DC]">
-                      <p className="text-xs text-slate-500">Vay vi mô khẩn cấp</p>
-                      <p className="text-lg font-extrabold text-[#0F2544] mt-1">500k – 3 triệu</p>
-                      <p className="text-[11px] text-amber-700 font-medium mt-0.5">Sinh hoạt thiết yếu</p>
-                    </div>
+                    <Link
+                      to="/auth"
+                      className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#15803D] hover:bg-emerald-800 text-white text-sm font-semibold transition"
+                    >
+                      Trải nghiệm nền tảng ngay
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
                   </div>
-
-                  <div className="rounded-xl bg-[#0F2544] text-white p-4 space-y-2.5">
-                    <div className="flex items-center justify-between text-xs text-slate-300">
-                      <span>Hệ thống tín nhiệm mô phỏng</span>
-                      <span className="font-semibold text-amber-400">Hạng A – D</span>
-                    </div>
-                    <div className="grid grid-cols-4 gap-2 text-center">
-                      {[
-                        { g: 'A', label: 'Tốt', cls: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30' },
-                        { g: 'B', label: 'Khá', cls: 'bg-sky-500/20 text-sky-300 border-sky-400/30' },
-                        { g: 'C', label: 'Xem xét', cls: 'bg-amber-500/20 text-amber-300 border-amber-400/30' },
-                        { g: 'D', label: 'Rủi ro', cls: 'bg-rose-500/20 text-rose-300 border-rose-400/30' },
-                      ].map((item) => (
-                        <div key={item.g} className={`rounded-lg border py-2 px-1 ${item.cls}`}>
-                          <div className="text-sm font-bold">{item.g}</div>
-                          <div className="text-[10px] opacity-90">{item.label}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <Link
-                    to="/auth"
-                    className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#15803D] hover:bg-emerald-800 text-white text-sm font-semibold transition"
-                  >
-                    Trải nghiệm nền tảng ngay
-                    <ArrowRight className="w-4 h-4" />
-                  </Link>
                 </div>
               </div>
             </div>
@@ -429,12 +455,12 @@ export const HomePage: React.FC = () => {
         {/* 4.6 QUY TRÌNH HOẠT ĐỘNG */}
         <section id="quy-trinh" className="py-16 sm:py-20 bg-white border-b border-[#E7E2D8]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-12">
+              <div className="text-center max-w-2xl mx-auto mb-12">
               <span className="text-xs font-bold uppercase tracking-widest text-[#15803D]">
                 Trải nghiệm liền mạch
               </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0F2544] mt-1">
-                Quy trình hoạt động 4 bước
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#102F59] mt-1">
+                Hướng dẫn quy trình hoạt động 8 bước
               </h2>
             </div>
 
@@ -537,7 +563,7 @@ export const HomePage: React.FC = () => {
                   </Link>
                   <Link
                     to="/app/education"
-                    className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-[#0F2544]/20 bg-white text-[#0F2544] text-sm font-semibold hover:bg-slate-50 transition"
+                    className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-[#102F59]/20 bg-white text-[#102F59] text-sm font-semibold hover:bg-slate-50 transition"
                   >
                     Xem góc Giáo dục tài chính
                   </Link>
@@ -546,7 +572,170 @@ export const HomePage: React.FC = () => {
             </div>
           </div>
         </section>
+
+        {/* 4.9 TIN TỨC & KIẾN THỨC */}
+        <section id="tin-tuc" className="py-16 sm:py-20 bg-[#FFFAF0] border-t border-[#E7E2D8]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-widest text-[#15803D]">
+                  Cập nhật & Chia sẻ
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-[#102F59] mt-1">
+                  Tin tức dự án & Kiến thức tài chính
+                </h2>
+              </div>
+              <Link
+                to="/app/education"
+                className="text-sm font-semibold text-[#15803D] hover:underline inline-flex items-center gap-1"
+              >
+                Mở thư viện tài chính & tính ngân sách →
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+              {newsArticles.map((news) => (
+                <article
+                  key={news.id}
+                  className="bg-white rounded-2xl border border-[#E7E2D8] p-5 flex flex-col justify-between space-y-4 hover:border-[#102F59]/30 transition"
+                >
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#15803D] font-semibold">
+                        {news.category}
+                      </span>
+                      <span className="text-slate-400">{formatDate(news.publishedAt)}</span>
+                    </div>
+                    <h3 className="text-sm font-bold text-[#102F59] leading-snug">{news.title}</h3>
+                    <p className="text-xs text-slate-600 leading-relaxed line-clamp-3">
+                      {news.summary}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedNews(news)}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#102F59] hover:text-[#15803D] transition"
+                  >
+                    <Newspaper className="w-3.5 h-3.5" />
+                    Đọc chi tiết →
+                  </button>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* 4.10 LIÊN HỆ DỰ ÁN */}
+        <section id="lien-he" className="py-16 sm:py-20 bg-white border-t border-[#E7E2D8]">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              <div className="lg:col-span-5 space-y-4">
+                <span className="text-xs font-bold uppercase tracking-widest text-[#15803D]">
+                  Kết nối với nhóm đề án
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-[#102F59]">
+                  Liên hệ Student P2P
+                </h2>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  Nếu giảng viên, chuyên gia hoặc sinh viên có góp ý cho đề án khởi nghiệp Student P2P, vui lòng gửi thông tin qua biểu mẫu bên cạnh.
+                </p>
+                <div className="rounded-2xl bg-[#FFFAF0] border border-[#EBE6DC] p-4 space-y-2 text-xs text-slate-700">
+                  <p className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-[#15803D]" />
+                    <span>Email đề án: contact@studentp2p.demo</span>
+                  </p>
+                  <p>Đơn vị thực hiện: Nhóm sinh viên Kinh tế – Tài chính – Ngân hàng</p>
+                </div>
+              </div>
+
+              <form
+                onSubmit={handleContactSubmit}
+                className="lg:col-span-7 bg-[#FFFAF0] rounded-2xl border border-[#E7E2D8] p-6 space-y-4"
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#102F59] mb-1">
+                      Họ và tên *
+                    </label>
+                    <input
+                      type="text"
+                      value={contactName}
+                      onChange={(e) => setContactName(e.target.value)}
+                      placeholder="Nhập họ tên của bạn"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-[#102F59] mb-1">
+                      Email *
+                    </label>
+                    <input
+                      type="email"
+                      value={contactEmail}
+                      onChange={(e) => setContactEmail(e.target.value)}
+                      placeholder="email@example.com"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#102F59] mb-1">
+                    Nội dung góp ý / liên hệ *
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={contactMessage}
+                    onChange={(e) => setContactMessage(e.target.value)}
+                    placeholder="Nhập nội dung..."
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#102F59] hover:bg-[#18427a] text-white text-sm font-semibold transition"
+                >
+                  <Send className="w-4 h-4" />
+                  Gửi liên hệ (Mô phỏng)
+                </button>
+              </form>
+            </div>
+          </div>
+        </section>
       </main>
+
+      {selectedNews && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-[2px]">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-lg w-full p-6 space-y-4">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-3">
+              <div>
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#15803D] text-[11px] font-semibold">
+                  {selectedNews.category} • {formatDate(selectedNews.publishedAt)}
+                </span>
+                <h3 className="text-lg font-extrabold text-[#102F59] mt-1.5">
+                  {selectedNews.title}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedNews(null)}
+                className="p-1 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-sm text-slate-700 leading-relaxed">{selectedNews.content}</p>
+            <div className="flex justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => setSelectedNews(null)}
+                className="px-4 py-2 rounded-xl bg-[#102F59] text-white text-xs font-semibold"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <PublicFooter />
     </div>

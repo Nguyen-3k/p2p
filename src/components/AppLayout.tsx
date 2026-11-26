@@ -4,6 +4,7 @@ import {
   Award,
   Bell,
   BookOpen,
+  FileCheck2,
   FileSpreadsheet,
   Home,
   LayoutDashboard,
@@ -11,12 +12,133 @@ import {
   Menu,
   RotateCcw,
   ShieldCheck,
+  UserCircle2,
   Users,
+  Wallet,
   X,
 } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
 import { useApp } from '../context/AppContext';
 import { ConfirmModal } from './ConfirmModal';
+import type { User } from '../types';
+
+interface NavItem {
+  to: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  badge?: number;
+}
+
+interface SidebarPanelProps {
+  navItems: NavItem[];
+  currentUser: User | null;
+  roleLabel: string;
+  onCloseMobile: () => void;
+  onOpenReset: () => void;
+  onLogout: () => void;
+}
+
+const SidebarPanel: React.FC<SidebarPanelProps> = ({
+  navItems,
+  currentUser,
+  roleLabel,
+  onCloseMobile,
+  onOpenReset,
+  onLogout,
+}) => (
+  <div className="flex flex-col h-full bg-[#102F59] text-slate-200">
+    <div className="p-5 border-b border-white/10">
+      <BrandLogo size="sm" darkText={false} to="/" />
+    </div>
+
+    <nav className="flex-1 p-3.5 space-y-1 overflow-y-auto">
+      {navItems.map((item) => {
+        const Icon = item.icon;
+        return (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            onClick={onCloseMobile}
+            className={({ isActive }) =>
+              `flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition ${
+                isActive
+                  ? 'bg-white/15 text-white shadow-xs'
+                  : 'text-slate-300 hover:bg-white/10 hover:text-white'
+              }`
+            }
+          >
+            <span className="flex items-center gap-3">
+              <Icon className="w-4 h-4 text-[#D9A83F] shrink-0" />
+              <span>{item.label}</span>
+            </span>
+            {typeof item.badge === 'number' && item.badge > 0 && (
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#D9A83F] text-[#102F59]">
+                {item.badge}
+              </span>
+            )}
+          </NavLink>
+        );
+      })}
+
+      <div className="pt-4 mt-4 border-t border-white/10 space-y-1">
+        <Link
+          to="/"
+          onClick={onCloseMobile}
+          className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition"
+        >
+          <Home className="w-4 h-4 text-emerald-400" />
+          <span>Trang giới thiệu dự án</span>
+        </Link>
+
+        <button
+          type="button"
+          onClick={onOpenReset}
+          className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition text-left"
+        >
+          <RotateCcw className="w-4 h-4 text-sky-400" />
+          <span>Khôi phục dữ liệu mẫu</span>
+        </button>
+      </div>
+    </nav>
+
+    <div className="p-4 border-t border-white/10">
+      {currentUser ? (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
+              {currentUser.fullName
+                .split(' ')
+                .slice(-2)
+                .map((w) => w[0])
+                .join('')
+                .toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-white truncate">{currentUser.fullName}</p>
+              <p className="text-[11px] text-[#D9A83F] truncate">{roleLabel}</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onLogout}
+            className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-semibold text-white transition"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            Đăng xuất
+          </button>
+        </div>
+      ) : (
+        <Link
+          to="/auth"
+          className="w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-[#D9A83F] text-[#102F59] text-xs font-bold hover:brightness-105 transition"
+        >
+          <Users className="w-4 h-4" />
+          Đăng nhập tài khoản
+        </Link>
+      )}
+    </div>
+  </div>
+);
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -43,12 +165,15 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children, title, subtitle 
       ? 'Quản trị viên'
       : 'Khách tham quan';
 
-  const navItems = [
+  const navItems: NavItem[] = [
     ...(currentUser?.role === 'borrower'
       ? [{ to: '/app/borrower', label: 'Dashboard Người vay', icon: LayoutDashboard }]
       : []),
     ...(currentUser?.role === 'lender'
-      ? [{ to: '/app/lender', label: 'Dashboard Người có vốn', icon: LayoutDashboard }]
+      ? [
+          { to: '/app/lender', label: 'Dashboard Người có vốn', icon: LayoutDashboard },
+          { to: '/app/capital', label: 'Nguồn vốn của tôi', icon: Wallet },
+        ]
       : []),
     ...(currentUser?.role === 'admin'
       ? [{ to: '/app/admin', label: 'Quản trị Admin', icon: ShieldCheck }]
@@ -56,9 +181,11 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children, title, subtitle 
     ...(currentUser
       ? [
           { to: '/app/loans', label: 'Quản lý khoản vay', icon: FileSpreadsheet },
+          { to: '/app/contracts', label: 'Hợp đồng dự thảo', icon: FileCheck2 },
           ...(currentUser.role === 'borrower'
             ? [{ to: '/app/credit-score', label: 'Điểm tín nhiệm A–D', icon: Award }]
             : []),
+          { to: '/app/profile', label: 'Hồ sơ & Xác minh', icon: UserCircle2 },
         ]
       : []),
     { to: '/app/education', label: 'Giáo dục tài chính', icon: BookOpen },
@@ -72,111 +199,23 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children, title, subtitle 
     navigate('/auth');
   };
 
-  const SidebarContent = () => (
-    <div className="flex flex-col h-full bg-[#0F2544] text-slate-200">
-      <div className="p-5 border-b border-white/10">
-        <BrandLogo size="sm" darkText={false} to="/" />
-      </div>
-
-      <nav className="flex-1 p-3.5 space-y-1 overflow-y-auto">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              onClick={() => setSidebarOpen(false)}
-              className={({ isActive }) =>
-                `flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition ${
-                  isActive
-                    ? 'bg-white/15 text-white shadow-xs'
-                    : 'text-slate-300 hover:bg-white/10 hover:text-white'
-                }`
-              }
-            >
-              <span className="flex items-center gap-3">
-                <Icon className="w-4 h-4 text-amber-400 shrink-0" />
-                <span>{item.label}</span>
-              </span>
-              {typeof item.badge === 'number' && item.badge > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-400 text-[#0F2544]">
-                  {item.badge}
-                </span>
-              )}
-            </NavLink>
-          );
-        })}
-
-        <div className="pt-4 mt-4 border-t border-white/10 space-y-1">
-          <Link
-            to="/"
-            onClick={() => setSidebarOpen(false)}
-            className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition"
-          >
-            <Home className="w-4 h-4 text-emerald-400" />
-            <span>Trang giới thiệu dự án</span>
-          </Link>
-
-          <button
-            type="button"
-            onClick={() => setResetModalOpen(true)}
-            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition text-left"
-          >
-            <RotateCcw className="w-4 h-4 text-sky-400" />
-            <span>Khôi phục dữ liệu demo</span>
-          </button>
-        </div>
-      </nav>
-
-      <div className="p-4 border-t border-white/10">
-        {currentUser ? (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
-                {currentUser.fullName
-                  .split(' ')
-                  .slice(-2)
-                  .map((w) => w[0])
-                  .join('')
-                  .toUpperCase()}
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-white truncate">{currentUser.fullName}</p>
-                <p className="text-[11px] text-amber-300 truncate">{roleLabel}</p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-semibold text-white transition"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              Đăng xuất
-            </button>
-          </div>
-        ) : (
-          <Link
-            to="/auth"
-            className="w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-amber-400 text-[#0F2544] text-xs font-bold hover:bg-amber-300 transition"
-          >
-            <Users className="w-4 h-4" />
-            Đăng nhập tài khoản
-          </Link>
-        )}
-      </div>
-    </div>
-  );
-
   return (
-    <div className="min-h-screen bg-[#FAF8F3] text-[#0F2544] flex">
+    <div className="min-h-screen bg-[#FFFAF0] text-[#102F59] flex">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:block w-64 shrink-0 sticky top-0 h-screen">
-        <SidebarContent />
+      <aside className="hidden lg:block w-64 shrink-0 sticky top-0 h-screen no-print">
+        <SidebarPanel
+          navItems={navItems}
+          currentUser={currentUser}
+          roleLabel={roleLabel}
+          onCloseMobile={() => setSidebarOpen(false)}
+          onOpenReset={() => setResetModalOpen(true)}
+          onLogout={handleLogout}
+        />
       </aside>
 
       {/* Mobile Drawer */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden flex">
+        <div className="fixed inset-0 z-50 lg:hidden flex no-print">
           <div
             className="fixed inset-0 bg-slate-900/50"
             onClick={() => setSidebarOpen(false)}
@@ -190,25 +229,32 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children, title, subtitle 
             >
               <X className="w-5 h-5" />
             </button>
-            <SidebarContent />
+            <SidebarPanel
+              navItems={navItems}
+              currentUser={currentUser}
+              roleLabel={roleLabel}
+              onCloseMobile={() => setSidebarOpen(false)}
+              onOpenReset={() => setResetModalOpen(true)}
+              onLogout={handleLogout}
+            />
           </div>
         </div>
       )}
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-[#E7E2D8] px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-[#E7E2D8] px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4 no-print">
           <div className="flex items-center gap-3 min-w-0">
             <button
               type="button"
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 rounded-xl text-[#0F2544] hover:bg-slate-100"
+              className="lg:hidden p-2 rounded-xl text-[#102F59] hover:bg-slate-100"
               aria-label="Mở menu"
             >
               <Menu className="w-5 h-5" />
             </button>
             <div className="min-w-0">
-              <h1 className="text-base sm:text-lg font-extrabold text-[#0F2544] truncate">
+              <h1 className="text-base sm:text-lg font-extrabold text-[#102F59] truncate">
                 {title}
               </h1>
               {subtitle && (
@@ -226,7 +272,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children, title, subtitle 
               >
                 <Bell className="w-4 h-4" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-500 text-white text-[10px] font-bold flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#D9A83F] text-[#102F59] text-[10px] font-bold flex items-center justify-center">
                     {unreadCount}
                   </span>
                 )}
@@ -248,8 +294,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children, title, subtitle 
 
       <ConfirmModal
         open={resetModalOpen}
-        title="Khôi phục dữ liệu demo ban đầu?"
-        description="Toàn bộ yêu cầu vay, kết nối, lịch sử thanh toán mô phỏng và thông báo bạn vừa thao tác sẽ được đưa về dữ liệu mẫu ban đầu."
+        title="Khôi phục dữ liệu mẫu ban đầu?"
+        description="Toàn bộ yêu cầu vay, đề xuất kết nối, hợp đồng dự thảo, nguồn vốn và lịch sử thanh toán sẽ được đưa về dữ liệu mẫu ban đầu."
         confirmLabel="Khôi phục ngay"
         onConfirm={() => {
           resetDemoData();

@@ -7,16 +7,22 @@ import {
   Clock,
   Edit3,
   Eye,
+  Handshake,
   Plus,
   Trash2,
   Wallet,
   X,
 } from 'lucide-react';
 import { AppLayout } from '../components/AppLayout';
-import { CreditBadge, StatusBadge } from '../components/Badges';
+import {
+  CreditBadge,
+  ProposalStatusBadge,
+  StatusBadge,
+  VerificationBadge,
+} from '../components/Badges';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { useApp } from '../context/AppContext';
-import type { LoanPackageType, LoanPurpose, LoanRequest } from '../types';
+import type { ConnectionProposal, LoanPackageType, LoanPurpose, LoanRequest } from '../types';
 import {
   calculateTotalRepayable,
   formatDate,
@@ -39,9 +45,11 @@ export const BorrowerDashboard: React.FC = () => {
     connections,
     installments,
     creditScores,
+    proposals,
     createLoanRequest,
     updateLoanRequest,
     cancelLoanRequest,
+    borrowerRespondProposal,
     simulateRepayment,
   } = useApp();
 
@@ -50,6 +58,10 @@ export const BorrowerDashboard: React.FC = () => {
   const [detailLoan, setDetailLoan] = useState<LoanRequest | null>(null);
   const [cancelTarget, setCancelTarget] = useState<LoanRequest | null>(null);
   const [payTargetId, setPayTargetId] = useState<string | null>(null);
+  const [proposalAction, setProposalAction] = useState<{
+    proposal: ConnectionProposal;
+    accept: boolean;
+  } | null>(null);
 
   // Form state
   const [packageType, setPackageType] = useState<LoanPackageType>('tuition_equipment');
@@ -185,15 +197,24 @@ export const BorrowerDashboard: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-bold text-[#0F2544]">Điểm tín nhiệm mô phỏng:</span>
+              <span className="text-sm font-bold text-[#102F59]">Điểm tín nhiệm mô phỏng:</span>
               {myScore && <CreditBadge grade={myScore.grade} score={myScore.score} />}
+              <VerificationBadge status={currentUser.verificationStatus} />
             </div>
-            <Link
-              to="/app/credit-score"
-              className="text-xs font-semibold text-[#15803D] hover:underline mt-1 inline-block"
-            >
-              Xem phân tích 5 tiêu chí & cải thiện hồ sơ →
-            </Link>
+            <div className="flex flex-wrap items-center gap-3 mt-1">
+              <Link
+                to="/app/credit-score"
+                className="text-xs font-semibold text-[#15803D] hover:underline"
+              >
+                Phân tích 5 tiêu chí →
+              </Link>
+              <Link
+                to="/app/profile"
+                className="text-xs font-semibold text-[#102F59] hover:underline"
+              >
+                Hồ sơ & Xác minh →
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -269,6 +290,87 @@ export const BorrowerDashboard: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Incoming Connection Proposals */}
+      {(() => {
+        const myProposals = proposals.filter((p) => p.borrowerId === currentUser.id);
+        return (
+          <div className="bg-white rounded-2xl border border-[#E7E2D8] overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
+              <h2 className="text-base font-bold text-[#102F59] flex items-center gap-2">
+                <Handshake className="w-5 h-5 text-[#15803D]" />
+                Đề xuất kết nối gửi đến tôi ({myProposals.length})
+              </h2>
+              <Link to="/app/contracts" className="text-xs font-semibold text-[#15803D] hover:underline">
+                Xem hợp đồng dự thảo →
+              </Link>
+            </div>
+
+            {myProposals.length === 0 ? (
+              <div className="p-6 text-center text-xs text-slate-500">
+                Chưa có đề xuất kết nối nào từ người có vốn.
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {myProposals.map((prop) => {
+                  const isWaiting = prop.status === 'Chờ người vay xác nhận';
+                  return (
+                    <div
+                      key={prop.id}
+                      className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    >
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-extrabold text-[#102F59]">{prop.code}</span>
+                          <span className="text-xs text-slate-400">• Mã vay: {prop.loanCode}</span>
+                          <ProposalStatusBadge status={prop.status} />
+                        </div>
+                        <p className="text-sm font-bold text-[#102F59]">
+                          Người đề xuất: {prop.lenderName} •{' '}
+                          <span className="text-[#15803D]">{formatVND(prop.amount)}</span> ({prop.termMonths} tháng)
+                        </p>
+                        <p className="text-xs text-slate-600">
+                          Lãi suất mô phỏng: {(prop.simulatedMonthlyRate * 100).toFixed(1)}%/tháng •{' '}
+                          {prop.conditionsNote}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        {isWaiting && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => setProposalAction({ proposal: prop, accept: false })}
+                              className="px-3.5 py-2 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-semibold transition"
+                            >
+                              Từ chối
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setProposalAction({ proposal: prop, accept: true })}
+                              className="px-4 py-2 rounded-xl bg-[#15803D] hover:bg-emerald-800 text-white text-xs font-semibold transition"
+                            >
+                              Đồng ý đề xuất
+                            </button>
+                          </>
+                        )}
+                        {prop.status === 'Đã tạo hợp đồng dự thảo' && (
+                          <Link
+                            to="/app/contracts"
+                            className="px-3.5 py-2 rounded-xl bg-[#102F59] text-white text-xs font-semibold hover:bg-[#18427a] transition"
+                          >
+                            Xem hợp đồng
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Loan Requests List */}
       <div className="bg-white rounded-2xl border border-[#E7E2D8] overflow-hidden">
@@ -627,6 +729,30 @@ export const BorrowerDashboard: React.FC = () => {
           setPayTargetId(null);
         }}
         onCancel={() => setPayTargetId(null)}
+      />
+
+      {/* Proposal Accept / Reject Confirm */}
+      <ConfirmModal
+        open={Boolean(proposalAction)}
+        title={
+          proposalAction?.accept
+            ? `Đồng ý đề xuất ${proposalAction.proposal.code}?`
+            : `Từ chối đề xuất ${proposalAction?.proposal.code}?`
+        }
+        description={
+          proposalAction?.accept
+            ? `Bạn đồng ý với điều kiện kết nối ${formatVND(proposalAction.proposal.amount)} trong ${proposalAction.proposal.termMonths} tháng từ ${proposalAction.proposal.lenderName}. Đề xuất sẽ chuyển sang chờ người có vốn xác nhận bước cuối để tạo hợp đồng dự thảo.`
+            : 'Nếu từ chối, đề xuất sẽ đóng lại và không tạo khoản vay hay lịch thanh toán.'
+        }
+        confirmLabel={proposalAction?.accept ? 'Đồng ý đề xuất' : 'Xác nhận từ chối'}
+        variant={proposalAction?.accept ? 'success' : 'danger'}
+        onConfirm={() => {
+          if (proposalAction) {
+            borrowerRespondProposal(proposalAction.proposal.id, proposalAction.accept);
+          }
+          setProposalAction(null);
+        }}
+        onCancel={() => setProposalAction(null)}
       />
     </AppLayout>
   );
